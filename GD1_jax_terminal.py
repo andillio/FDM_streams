@@ -156,6 +156,33 @@ def GenerateStream(pot, progenitor_backwards):
 	return stream
 
 
+# Define function to convert from RA, Dec to stream coordinates phi1, phi2
+@jax.jit
+def icrs_to_gd1(ra_rad, dec_rad):
+    R = jnp.array(
+        [
+            [-0.4776303088, -0.1738432154, 0.8611897727],
+            [0.510844589, -0.8524449229, 0.111245042],
+            [0.7147776536, 0.4930681392, 0.4959603976],
+        ]
+    ) # R is the rotation matrix from Koposov et al. (2010)
+
+
+    icrs_vec = jnp.vstack([jnp.cos(ra_rad)*jnp.cos(dec_rad),
+                           jnp.sin(ra_rad)*jnp.cos(dec_rad),
+                           jnp.sin(dec_rad)]).T 
+    # spherical coords to geocentric equatorial coords X, Y, Z
+
+    stream_frame_vec = jnp.einsum('ij,kj->ki',R,icrs_vec) # matrix multiplication?
+    # stream_frame_vec = jnp.dot(R,icrs_vec).T
+    
+    phi1 = jnp.arctan2(stream_frame_vec[:,1],stream_frame_vec[:,0])*(180/jnp.pi)
+    phi2 = jnp.arcsin(stream_frame_vec[:,2])*(180/jnp.pi)
+
+    
+    return phi1, phi2
+
+
 def CreateICRS_coords(stream):
 	# Create SkyCoord object in Galactocentric coordinates of generated stars in stream
 	stream_xyz = coord.SkyCoord(x=stream[:,0], y=stream[:,1], z=stream[:,2], unit='kpc', 
@@ -165,12 +192,24 @@ def CreateICRS_coords(stream):
 	gd1_ras = stream_icrs.lon.value  # in rad
 	gd1_decs = stream_icrs.lat.value  # in rad
 
+	return gd1_ras, gd1_decs
 
-def Plot 
+
+def PlotTranformedStream(gd1_ras, gd1_decs):
+	fo = pu.FigObj()
+
+	phi1, phi2 = icrs_to_gd1(gd1_ras, gd1_decs)
+	prog1, prog2 = icrs_to_gd1(np.deg2rad(gd1_c.ra.value), np.deg2rad(gd1_c.dec.value))  # RA and Dec of progenitor
+	fo.AddPlot(phi1, phi2, color = 'r',
+	 ls = '', mk = '.', label = r'Mock stream')
+	fo.AddPlot(prog1, prog2, color = 'k',
+	 ls = '', mk = '*', label = r'Mock stream')
+
 
 if __name__ == "__main__":
 	progenitor_backwards, pot = IntegrateOrbit()
 	# PlotOrbit(progenitor_backwards)
 	stream = GenerateStream(pot, progenitor_backwards)
 	# PlotGD1Stream(progenitor_backwards, stream)
-	CreateICRS_coords(stream)
+	gd1_ras, gd1_decs = CreateICRS_coords(stream)
+	PlotTranformedStream(gd1_ras, gd1_decs)
