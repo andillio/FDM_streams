@@ -1,6 +1,8 @@
 from gala.units import UnitSystem
 from astropy import units as u
+from astropy.constants import G
 usys = UnitSystem(u.kpc, u.Myr, u.Msun, u.radian)
+usys.G = G.to(u.kpc**3 / (u.Msun * u.Myr**2)).value
 import jax.numpy as jnp
 import plotUtils as pu
 import diffrax

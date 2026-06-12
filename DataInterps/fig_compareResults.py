@@ -16,6 +16,17 @@ r'No FDM (Andrews sim)',
 r'$m_\mathrm{22} = 0.5$',
 r'$m_\mathrm{22} = 0.2$',
 ]
+simNames = [
+"testRun_noFDM",
+'testRun_yesFDM_m22=1',
+"testRun_forwards_m22=1"
+]
+labels = [
+# r'$f_\mathrm{FDM} = 10^{-6}$',
+r'No FDM (Andrews sim)',
+r'$m_\mathrm{22} = 1$',
+r'$m_\mathrm{22} = 1$',
+]
 final_drop = -1
 
 

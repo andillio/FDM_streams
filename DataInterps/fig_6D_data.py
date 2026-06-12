@@ -1,9 +1,12 @@
-from cupy import rad2deg
 import numpy as np
+import DataObj as do 
 import astropy.units as u
 from astropy.coordinates import SkyCoord, Galactocentric
 import plotUtils as pu
 import astroUtils as au
+
+simName = "testRun_forwards_m22=1"
+# simName = "testRun_yesFDMHeavy"
 
 
 def ConvertToPhi(X, Y, Z):
@@ -43,16 +46,25 @@ def ConvertToPhi(X, Y, Z):
 	return phi, theta, dist
 
 
-def GetCoords():
-	stream = np.load("../stream_final_conditions.npy")
+def GetCoords(d):
+	r,v = d.LoadCorpData(d.data_drops)
+	ts_back = np.load("../t_prog_orbit.npy")
+	r_prog = np.load("../r_prog_orbit.npy")
+	v_prog = np.load("../v_prog_orbit.npy")
+	indexer = len(ts_back)//2
+	# stream = np.load("../stream_final_conditions.npy")
 
-	phi1, phi2, r = ConvertToPhi(stream[:,0], stream[:,1], stream[:,2])
-	v_phi1, v_phi2, v_r = ConvertToPhi(stream[:,3], stream[:,4], stream[:,5])
+	phi1, phi2, r = ConvertToPhi(r[:,0] + r_prog[indexer,0],
+	 r[:,1] + r_prog[indexer,1],
+	 r[:,2] + r_prog[indexer, 2])
+	v_phi1, v_phi2, v_r = ConvertToPhi(v[:,0] + v_prog[indexer, 0],
+	 v[:,1]+ v_prog[indexer, 1],
+	 v[:,2]+ v_prog[indexer, 2])
 
 	return phi1, phi2, r, v_phi1, v_phi2, v_r
 
 
-def Plot6D():
+def Plot6D(name):
 	fo = pu.FigObj(2,3)
 	rad2deg = 180/np.pi
 
@@ -75,7 +87,8 @@ def Plot6D():
 	# radians per megayear to degrees per second
 	rpmy2dps = rad2deg / (3.154e13)
 
-	phi1, phi2, r, v_phi1, v_phi2, v_r = GetCoords()
+	d = do.MeshDataObj(name)
+	phi1, phi2, r, v_phi1, v_phi2, v_r = GetCoords(d)
 
 	fo.AddPlot(phi1 * rad2deg, r - r0, ls = '', mk = 'o')
 	fo.AddLine(phi0 * rad2deg, r0 * 0, color = 'r', ls = '', mk = 'o')
@@ -105,6 +118,7 @@ def Plot6D():
 	fo.AddHist(phi1 * rad2deg, nBins= 100, density = True)
 	fo.SetXLabel(r'$\phi_1$')
 	fo.SetYLabel(r'$\rho \, [\mathrm{stars / deg.}] $')
+	fo.save(d.dataDir + "fig_6D")
 
 	fo = pu.FigObj()
 
@@ -126,4 +140,4 @@ def Plot6D():
 
 
 if __name__ == "__main__":
-	Plot6D()
+	Plot6D(simName)

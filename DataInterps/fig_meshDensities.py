@@ -9,6 +9,8 @@ import numpy as np
 # simName = "ics_2_5m22"
 # simName = "solitonData_light"
 simName = "testRun_yesFDM"
+simName = "testRun_backwards_m22=1"
+
 def PlotStuff(d):
 	initial_drop = 0
 	mid_drop = d.data_drops // 2
