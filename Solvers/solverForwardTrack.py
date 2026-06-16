@@ -51,7 +51,7 @@ class Solver():
 		### dynamic variables
 		self.psi = None
 		self.K = None # array-like, [N^3] kinetic update operator argument, kx x kx x kx
-		self.r = None # array-like, [np, D] positions of particles
+		self.r = None # array-like, [np, D] positions of particles displace from unperturbed prog position
 		self.v = None # array-like, [np, D] velocities of particles
 		self.active = None # array-like, [np] is this star currently simulated?
 		self.dt = 1. # float, timestep
@@ -62,7 +62,9 @@ class Solver():
 
 		### input params
 		self.r_prog = None
-		self.v_prog = None 
+		self.v_prog = None
+		self.r_perturb = None # dimensions (1,3), displaced from unperturbed prog
+		self.v_perturb = None 
 		self.t_prog = None 
 		self.r_stars = None 
 		self.v_stars = None 
@@ -142,6 +144,11 @@ class Solver():
 			np.save("Data/" + self.simName + f"/v/drop{i + self.initial_drop}.npy", self.v)
 		np.save("Data/" + self.simName + f"/psi/drop{i+ self.initial_drop}.npy", self.psi)
 
+		self.r_perturb_save[i + self.initial_drop] = self.r_perturb[0]
+		self.v_perturb_save[i + self.initial_drop] = self.v_perturb[0]
+		np.save("Data/" + self.simName + f"/r_perturb.npy", self.r_perturb_save)
+		np.save("Data/" + self.simName + f"/v_perturb.npy", self.v_perturb_save)
+
 
 	def OutputToml(self):
 		"""
@@ -189,12 +196,20 @@ class Solver():
 		"""
 		makes the data directory and outputs the toml file
 		"""
+		np = np_
+		if CUPY_IMPORTED and self.gpu:
+			np = cp
+
 		if self.simName == None:
 			raise Exception("simName has not been set.\n"+\
 				"set simName before initializing files.")
 
 		if not(os.path.isdir(f"Data/{self.simName}")):
 			os.mkdir(f"Data/{self.simName}")
+
+		self.r_perturb_save = np.zeros((self.data_drops+1,3))
+		self.v_perturb_save = np.zeros((self.data_drops+1,3))	
+
 		self.OutputToml()
 		self.OutputICs()
 
@@ -424,7 +439,11 @@ class Solver():
 
 		# then spawn a star in the frame of ref of the prog
 		r_new_star = self.r_stars[self.strip_index] - r_prog_current
+		if not(self.r_perturb is None):
+			r_new_star += self.r_perturb[0]
 		v_new_star = self.v_stars[self.strip_index] - v_prog_current
+		if not(self.v_perturb is None):
+			v_new_star += self.v_perturb[0]
 		# then add that star to the simulated list
 
 		self.r[self.strip_index] = r_new_star
@@ -525,9 +544,9 @@ class Solver():
 		# TODO: can prob make this symplectic
 		if self.integrateBackwards:
 			dt = np.abs(dt)*-1
-		self.Drift(dt/2.)
-		# self.AlterTemp()
-		Vmax = self.Kick(dt)
+		self.Drift(dt/2.) # modify real space distribution based on momentum space distribution
+		# self.AlterTemp() # modify momentum space distribution based on external potential
+		Vmax = self.Kick(dt) # modify momentum space distribution based on real space distribution
 		self.Drift(dt/2.)
 
 		return Vmax
@@ -629,8 +648,11 @@ class Solver():
 			self.r[self.active] += self.v[self.active] * dt
 			# self.MakePeriodic()
 
+		if not(self.r_perturb is None) and not(self.v_perturb is None):
+			self.r_perturb += self.v_perturb * dt
 
-	def ComputeAcc(self, phi):
+
+	def ComputeAcc(self, phi, r):
 		"""
 		compute the acceleration for the corpuscular particles given a potential
 
@@ -643,7 +665,7 @@ class Solver():
 		if CUPY_IMPORTED and self.gpu:
 			np = cp
 
-		acc = np.zeros(np.shape(self.r[self.active]))
+		acc = np.zeros(np.shape(r))
 
 		if len(phi) > 0:
 			if self.D == 1:
@@ -651,11 +673,11 @@ class Solver():
 			elif self.D == 2:
 				acc = self.ComputeAcc2D(phi)
 			elif self.D == 3:
-				acc = self.ComputeAcc3D(phi)		
+				acc = self.ComputeAcc3D(phi,r)		
 		return acc
 
 
-	def ComputeAcc3D(self, phi):
+	def ComputeAcc3D(self, phi, r):
 		"""
 		compute the 3D acceleration for the corpuscular particles given a potential
 
@@ -664,7 +686,7 @@ class Solver():
 		:return: array-like, [np, D] acceleration
 		"""
 		N = self.N
-		r = self.GetPeriodicR(self.r[self.active])
+		r = self.GetPeriodicR(r)
 		dx = self.dx
 		L = self.L
 
@@ -868,14 +890,24 @@ class Solver():
 				self.psi *= np.exp(-1j*dt*\
 	            	np.einsum("i,j->ij",1./self.hbar_, phi))
 		if not(self.np is None) and self.np > 0:
-			acc = self.ComputeAcc(phi)
+			acc = self.ComputeAcc(phi, self.r[self.active])
 			acc[:] -= self.CalcForceOnProg(self.T)
 
 			r_prog_current, v_prog_current = self.GetCurrentProgVelAndPos()
 
-			acc += self.GetForceAtPosition(self.r[self.active] + r_prog_current
+			acc_stars = acc + self.GetForceAtPosition(
+				self.r[self.active] + r_prog_current
 				, float(self.T) )
-			self.v[self.active] += acc*dt.real
+			self.v[self.active] += acc_stars*dt.real
+
+			if not(self.r_perturb is None):
+				acc = self.ComputeAcc(phi, self.r_perturb)
+				acc[:] -= self.CalcForceOnProg(self.T)
+				r_perturb_eval = np.zeros((1,3))
+				r_perturb_eval[0] = self.r_perturb[0] + r_prog_current
+				acc_perturb = acc + self.GetForceAtPosition(
+				r_perturb_eval, float(self.T) )
+				self.v_perturb += acc_perturb*dt.real
 
 		Vmax = np.max(np.abs(phi - np.mean(phi)))
 
@@ -900,7 +932,7 @@ class Solver():
 
 	@jax.jit(static_argnums=0)
 	def GetPotential_jax(self,r,T):
-	    return jax.vmap(lambda pos: self.pot_MW.potential(pos, T))(r)
+		return jax.vmap(lambda pos: self.pot_MW.potential(pos, T))(r)
 
 	def CalcForceOnProg(self, T):
 		np = np_
