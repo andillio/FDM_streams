@@ -7,7 +7,6 @@ import sysUtils as su
 import gridUtils as gu
 import mathUtils as mu
 import types
-import baseSolver as BS
 CUPY_IMPORTED = True
 import warnings as warn 
 try:
