@@ -10,7 +10,7 @@ simNames = [
  "testRun_forwards_m22=1",
 ]
 colors = ['r','b','g','c','m','y','k']
-
+maxDrop = 8
 
 def TotalOrbit(d, fo, j):
 	N = d.N
@@ -24,7 +24,7 @@ def TotalOrbit(d, fo, j):
 	r_prog = np.load("../r_prog1.npy")
 	if j == 0:
 		r_prog = np.flip(np.load("../r_prog1.npy"), axis = 0)
-		for i in range(d.data_drops+1):
+		for i in range(d.data_drops + 1):
 			r,v = d.LoadCorpData(i, center = False)
 			r_orbit[i,:] = r[0] 
 			t[i] = i * T / d.data_drops
@@ -34,7 +34,7 @@ def TotalOrbit(d, fo, j):
 	t_prog = np.load("../t_prog1.npy")
 	r_prog0 = np.interp(t, t_prog, r_prog[:,1])
 	r_prog2 = np.interp(t, t_prog, r_prog[:,2])
-	print(r_prog[0])
+	# print(r_prog[0])
 
 	if j == 0:
 		fo.AddLine(r_orbit[:,2] + r_prog2, r_orbit[:,1] + r_prog0, color = colors[j])
@@ -53,17 +53,21 @@ def OrbitPerturbation(d, fo, j):
 	t = np.zeros(d.data_drops+1)
 
 	if j == 0:
-		for i in range(d.data_drops+1):
+		for i in range(d.data_drops + 1):
 			r,v = d.LoadCorpData(i, center = False)
 			r_orbit[i,:] = r[0] 
 			t[i] = i * T / d.data_drops
+		r_res = r_orbit[::5] 
+		print(r_res[len(r_res)-maxDrop-1:len(r_res)])
 	else:
 		r_orbit = np.load(d.dataDir + "r_perturb.npy")
+		print(np.flip(r_orbit[0:maxDrop+1], axis = 0))
 
 	if j == 0:
 		fo.AddPlot(r_orbit[:,2], r_orbit[:,1], color = colors[j])
 	else:
 		fo.AddLine(r_orbit[:,2], r_orbit[:,1], color = colors[j], ls = '', mk = 'o')
+		print(r_orbit[-1])
 
 
 
@@ -79,7 +83,7 @@ def OrbitalRadius(d, fo, j):
 	r_prog = np.load("../r_prog1.npy")
 	if j == 0:
 		r_prog = np.flip(np.load("../r_prog1.npy"), axis = 0)
-		for i in range(d.data_drops+1):
+		for i in range(d.data_drops + 1):
 			r,v = d.LoadCorpData(i, center = False)
 			r_orbit[i,:] = r[0] 
 			t[i] = i * T / d.data_drops
@@ -104,7 +108,8 @@ def OrbitalRadius(d, fo, j):
 
 
 if __name__ == "__main__":
-	fo = pu.FigObj(3)
+	# fo = pu.FigObj(3)
+	fo = pu.FigObj(2)
 	for i in range(len(simNames)):
 		d = do.MeshDataObj(simNames[i])
 		TotalOrbit(d, fo, i)

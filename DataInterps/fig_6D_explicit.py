@@ -1,3 +1,4 @@
+# pylint: disable=C,W
 import numpy as np
 import DataObj as do 
 import astropy.units as u
@@ -5,13 +6,13 @@ from astropy.coordinates import SkyCoord, Galactocentric
 import plotUtils as pu
 import astroUtils as au
 
-simName = "testRun_yesFDM_m22=1"
-# simName = "testRun_noFDM"
 simName = "testRun_forwards_m22=1"
-simName = "testRun_yesFDM_m22=2"
-simName = "testRun_yesFDMHeavy"
-simName = "testRun_yesFDM"
-simName = "testRun_forwards_m22=1_run2"
+
+# r_prog = np.load(f"../Data/{simName}/r_prog.npy")
+r_prog = np.load(f"../r_prog1.npy")
+# v_prog = np.load(f"../Data/{simName}/v_prog.npy")
+v_prog = np.load(f"../v_prog.npy")
+indexer = len(r_prog)-1
 
 def ConvertVelocities(X, Y, Z, VX, VY, VZ):
 	rX, rY, rZ = X * u.kpc, Y * u.kpc, Z * u.kpc
@@ -98,21 +99,10 @@ def ConvertToPhi(X, Y, Z):
 	return phi, theta, dist
 
 
+
 def GetCoords(d):
 	r,v = d.LoadCorpData(d.data_drops)
-	ts_back = np.load("../t_prog_orbit.npy")
-	r_prog = np.load("../r_prog_orbit.npy")
-	v_prog = np.load("../v_prog_orbit.npy")
 
-	# ts_back = np.linspace(0, d.Tf, d.data_drops + 1)
-	# r_prog = np.load(f"../Data/{simName}/r_prog.npy")
-	# v_prog = np.load(f"../Data/{simName}/v_prog.npy")
-
-	# ts_back = np.load("../t_prog1.npy")
-	# r_prog = np.load("../r_prog1.npy")
-	# v_prog = np.load("../v_prog1.npy")
-
-	indexer = len(ts_back)//2
 	# stream = np.load("../stream_final_conditions.npy")
 
 	v_phi1, v_phi2, v_r = ConvertVelocities(r[:,0] + r_prog[indexer,0],
@@ -134,28 +124,13 @@ def Plot6D(name,d):
 	fo = pu.FigObj(2,3)
 	rad2deg = 180/np.pi
 
-	# ts_back = np.linspace(0, d.Tf, d.data_drops + 1)
-	# r_prog = np.load(f"../Data/{simName}/r_prog.npy")
-	# v_prog = np.load(f"../Data/{simName}/v_prog.npy")
-
-	ts_back = np.load("../t_prog_orbit.npy")
-	r_prog = np.load("../r_prog_orbit.npy")
-	v_prog = np.load("../v_prog_orbit.npy")
-
-	# ts_back = np.load("../t_prog1.npy")
-	# r_prog = np.load("../r_prog1.npy")
-	# v_prog = np.load("../v_prog1.npy")
-	print(ts_back[len(ts_back)//2])
-
-	indexer = len(ts_back)//2
-
 	v_phi_prog, v_theta_prog, v_r_prog = ConvertVelocities(r_prog[:,0], r_prog[:,1], r_prog[:,2],
 		v_prog[:,0], v_prog[:,1], v_prog[:,2])
-	phi_prog, theta_prog, r_prog = ConvertToPhi(r_prog[:,0], r_prog[:,1], r_prog[:,2])
+	phi_prog, theta_prog, r_prog_ = ConvertToPhi(r_prog[:,0], r_prog[:,1], r_prog[:,2])
 
 	phi0 = np.array([phi_prog[indexer]])
 	theta0 = np.array([theta_prog[indexer]])
-	r0 = np.array([r_prog[indexer]])
+	r0 = np.array([r_prog_[indexer]])
 	v_phi0 = np.array([v_phi_prog[indexer]])
 	v_theta0 = np.array([v_theta_prog[indexer]])
 	v_r0 = np.array([v_r_prog[indexer]])
@@ -206,97 +181,10 @@ def Plot6D(name,d):
 	fo.SetYLabel(r'$\rho \, [\mathrm{stars / deg.}] $')
 	fo.save(d.dataDir + "fig_6D")
 
-	# fo.show()
-
-
-def Plot6DZoom(name,d ):
-	fo = pu.FigObj(2,3)
-	rad2deg = 180/np.pi
-
-	ts_back = np.load("../t_prog_orbit.npy")
-	r_prog = np.load("../r_prog_orbit.npy")
-	v_prog = np.load("../v_prog_orbit.npy")
-
-	# ts_back = np.linspace(0, d.Tf, d.data_drops + 1)
-	# r_prog = np.load(f"../Data/{simName}/r_prog.npy")
-	# v_prog = np.load(f"../Data/{simName}/v_prog.npy")
-	print(np.shape(ts_back))
-
-	# ts_back = np.load("../t_prog1.npy")
-	# r_prog = np.load("../r_prog1.npy")
-	# v_prog = np.load("../v_prog1.npy")
-
-	print(ts_back)
-
-	indexer = len(ts_back)//2
-	print(ts_back[indexer])
-
-	v_phi_prog, v_theta_prog, v_r_prog = ConvertVelocities(r_prog[:,0], r_prog[:,1], r_prog[:,2],
-		v_prog[:,0], v_prog[:,1], v_prog[:,2])
-	phi_prog, theta_prog, r_prog = ConvertToPhi(r_prog[:,0], r_prog[:,1], r_prog[:,2])
-	phi0 = np.array([phi_prog[indexer]])
-	theta0 = np.array([theta_prog[indexer]])
-	r0 = np.array([r_prog[indexer]])
-	v_phi0 = np.array([v_phi_prog[indexer]])
-	v_theta0 = np.array([v_theta_prog[indexer]])
-	v_r0 = np.array([v_r_prog[indexer]])
-
-	# radians per megayear to degrees per second
-	rpmy2dps = rad2deg / (3.154e13)
-
-	# degrees per second to miliarcseconds per year
-	degps2maspy = 1.135e14 
-
-	phi1, phi2, r, v_phi1, v_phi2, v_r = GetCoords(d)
-
-	fo.AddPlot(phi1 * rad2deg, r, ls = '', mk = '.')
-	fo.AddLine(phi0 * rad2deg, r0, color = 'k', ls = '', mk = 'o')
-	fo.SetXLabel(r'$\phi_1$')
-	fo.SetYLabel(r'$\Delta r \, [\mathrm{kpc}]$')
-	fo.SetXLim(-60,0)
-	fo.SetYLim(7,11)
-
-	fo.AddPlot(phi1 * rad2deg, phi2 * rad2deg, ls = '', mk = '.')
-	fo.AddLine(phi0 * rad2deg, theta0 * rad2deg, color = 'k', ls = '', mk = 'o')
-	fo.SetXLabel(r'$\phi_1$')
-	fo.SetYLabel(r'$\Delta \phi_2 \, [\mathrm{deg.}]$')
-	fo.SetXLim(-60,0)
-	fo.SetYLim(-0.4,2.27)
-
-	fo.AddPlot(phi1 * rad2deg, v_r, ls = '', mk = '.')
-	fo.AddLine(phi0 * rad2deg, v_r0, color = 'k', ls = '', mk = 'o')
-	fo.SetXLabel(r'$\phi_1$')
-	fo.SetYLabel(r'$\Delta v_r \, [\mathrm{km/s}]$')
-	fo.SetXLim(-60,0)
-	fo.SetYLim(-300,200)
-
-	fo.AddPlot(phi1 * rad2deg, v_phi1, ls = '', mk = '.')
-	fo.AddLine(phi0 * rad2deg, v_phi0, color = 'k', ls = '', mk = 'o')
-	fo.SetXLabel(r'$\phi_1$')
-	fo.SetYLabel(r'$\Delta v_{\phi_1} \, [\mathrm{mas/yr}]$')
-	fo.SetXLim(-60,0)
-	fo.SetYLim(-10,5)
-
-	fo.AddPlot(phi1 * rad2deg, v_phi2, ls = '', mk = '.')
-	fo.AddLine(phi0 * rad2deg, v_theta0, color = 'k', ls = '', mk = 'o')
-	fo.SetXLabel(r'$\phi_1$')
-	fo.SetYLabel(r'$\Delta v_{\phi_2} \, [\mathrm{mas/yr}] $')
-	fo.SetXLim(-60,0)
-	fo.SetYLim(-5,3)
-
-	fo.AddHist(phi1 * rad2deg, nBins= 100, density = True)
-	fo.AddLine(phi0 * rad2deg, [0], color = 'k', ls = '', mk = 'o')
-	fo.SetXLabel(r'$\phi_1$')
-	fo.SetYLabel(r'$\rho \, [\mathrm{stars / deg.}] $')
-	fo.save(d.dataDir + "fig_6D")
-	fo.SetXLim(-60,0)
-	fo.SetYLim(-.001,.03)
-	fo.save(d.dataDir + "fig_6D_zoom")
-
 	fo.show()
 
 
 if __name__ == "__main__":
 	d = do.MeshDataObj(simName)
 	Plot6D(simName, d)
-	Plot6DZoom(simName, d)
+	# Plot6DZoom(simName, d)

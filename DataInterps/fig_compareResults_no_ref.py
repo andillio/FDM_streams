@@ -8,23 +8,24 @@ import numpy as np
 simNames = [
 "testRun_noFDM",
 "testRun_yesFDM_m22=2",
-"testRun_yesFDM_m22=1",
+# "testRun_yesFDM_m22=1",
 "testRun_yesFDMHeavy",
+ "testRun_forwards_m22=1",
 # "testRun_yesFDM",
 ]
 labels = [
 # r'$f_\mathrm{FDM} = 10^{-6}$',
 r'No FDM',
 r'$m_\mathrm{22} = 2.0$',
-r'$m_\mathrm{22} = 1.0$',
 r'$m_\mathrm{22} = 0.5$',
+r'$m_\mathrm{22} = 1.0$',
 # r'$m_\mathrm{22} = 0.2$',
 ]
 final_drop = 10
 
 
 def PlotStuff(d, fo):
-	data_drops = final_drop
+	data_drops = d.data_drops
 
 	r,v = d.LoadCorpData(data_drops)
 	r_prog = np.load("../r_prog1.npy")

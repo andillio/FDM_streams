@@ -19,7 +19,8 @@ import time
 import sysUtils as su
 import sys
 sys.path.insert(1, 'Solvers')
-import solver as solver
+# import solver as solver
+import solverExplicitProg as solver
 import scipy.stats as sp2
 import streamsculptor
 from streamsculptor import potential
@@ -30,12 +31,12 @@ usys = UnitSystem(u.kpc, u.Myr, u.Msun, u.radian)
 usys.G = G.to(u.kpc**3 / (u.Msun * u.Myr**2)).value
 
 ### sim config params
-simName = "testRun_backwards_m22=1"
-N = 256
+simName = "testRun_backwards_m22=1_run3"
+N = 64
 D = 3
 data_drops = 100
 cf = .1
-L = 25/ np.sqrt(3)
+L = 25/ np.sqrt(3) / 2.
 dx = L / N
 nf = 1
 m22 = np.array([1])
@@ -46,7 +47,7 @@ Tf = 3500.
 initial_drop = 0
 T_initial = 0
 
-seed_ = 0
+seed_ = 3
 
 sigma_dm = 216. * au.kms2kpcMyr
 n_streams = 64
@@ -101,9 +102,10 @@ def SetICs():
 	s.hbar_ = au.h_tilde(m22)
 	s.pot_MW = potential.GalaMilkyWayPotential(units=usys)
 
-	s.r_prog = np.flip(np.load("r_prog1.npy"), axis = 0)
-	s.v_prog = np.flip(np.load("v_prog1.npy"), axis = 0)
-	s.t_prog = np.load("t_prog1.npy")
+	s.r_prog = np.zeros((1,3))
+	s.v_prog = np.zeros((1,3))
+	s.r_prog[0] = np.load("r_prog1.npy")[-1]
+	s.v_prog[0] = np.load("v_prog1.npy")[-1]
 
 	# initialize dynamic variables
 	s.set_K()
@@ -112,20 +114,14 @@ def SetICs():
 	N_stars = 1
 	s.np = N_stars
 	s.r = np.zeros( (N_stars, 3) )
-	# s.r[0] = s.r_prog[0]
 	s.v = np.zeros( (N_stars, 3) )
-	# s.v[0] = s.v_prog[0]
-	# s.active = np.empty(N_stars, dtype = np.bool_)
-	# s.active.fill(False)
 	s.active = np.full(N_stars, True)
+
+	s.AlterAmp()
 
 	# set temperature and orbit info
 	s.sigma = sigma_dm 
-	# s.v_bulk = np.zeros(3)
-	# s.v_bulk[2] = sigma_dm 
-	# s.v_bulk[1] = 5*L / Tf
-	# assert(0)
-	# s.GetForceAtPosition(np.ones((3,3)), 0)
+	s.T_ref = Tf
 
 	return s
 
@@ -133,5 +129,5 @@ def SetICs():
 if __name__ == "__main__":
 	# set up sim ics
 	s = SetICs()
-	PlotStuff(np.abs(s.psi[0,N//2])**2)
+	# PlotStuff(np.abs(s.psi[0,N//2])**2)
 	s.RunSim()
