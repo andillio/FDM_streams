@@ -6,8 +6,8 @@ import mathUtils as mu
 import numpy as np 
 
 simNames = [
- "testRun_backwards_m22=1_run2",
- "testRun_forwards_m22=1_run2",
+ "dataRun_m22=0_3_run1",
+ "dataRun_m22=0_3_run1_back",
 ]
 colors = ['r','b','g','c','m','y','k']
 

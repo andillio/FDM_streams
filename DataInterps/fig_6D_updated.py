@@ -12,6 +12,7 @@ simName = "testRun_yesFDM_m22=2"
 simName = "testRun_yesFDMHeavy"
 simName = "testRun_yesFDM"
 simName = "testRun_forwards_m22=1_run2"
+simName = "testRun_forwards_m22=1_run3"
 
 def ConvertVelocities(X, Y, Z, VX, VY, VZ):
 	rX, rY, rZ = X * u.kpc, Y * u.kpc, Z * u.kpc

@@ -6,12 +6,12 @@ from astropy.coordinates import SkyCoord, Galactocentric
 import plotUtils as pu
 import astroUtils as au
 
-simName = "testRun_forwards_m22=1"
+simName = "dataRun_m22=0_3_run1"
 
-# r_prog = np.load(f"../Data/{simName}/r_prog.npy")
-r_prog = np.load(f"../r_prog1.npy")
-# v_prog = np.load(f"../Data/{simName}/v_prog.npy")
-v_prog = np.load(f"../v_prog.npy")
+r_prog = np.load(f"../Data/{simName}/r_prog.npy")
+# r_prog = np.load(f"../r_prog1.npy")
+v_prog = np.load(f"../Data/{simName}/v_prog.npy")
+# v_prog = np.load(f"../v_prog.npy")
 indexer = len(r_prog)-1
 
 def ConvertVelocities(X, Y, Z, VX, VY, VZ):

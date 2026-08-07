@@ -31,15 +31,15 @@ usys = UnitSystem(u.kpc, u.Myr, u.Msun, u.radian)
 usys.G = G.to(u.kpc**3 / (u.Msun * u.Myr**2)).value
 
 ### sim config params
-simName = "testRun_backwards_m22=1_run3"
+simName = "dataRun_m22=0_5_run2_back"
 N = 256
 D = 3
 data_drops = 100
 cf = .1
-L = 25/ np.sqrt(3) / 2.
+L = 25/ np.sqrt(3)
 dx = L / N
 nf = 1
-m22 = np.array([1])
+m22 = np.array([0.5])
 rhoDM = 1e7
 Mtot = rhoDM * L**3
 C = au.G*4*np.pi
@@ -47,7 +47,7 @@ Tf = 3500.
 initial_drop = 0
 T_initial = 0
 
-seed_ = 3
+seed_ = 4
 
 sigma_dm = 216. * au.kms2kpcMyr
 n_streams = 64

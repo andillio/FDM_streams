@@ -30,8 +30,8 @@ usys = UnitSystem(u.kpc, u.Myr, u.Msun, u.radian)
 usys.G = G.to(u.kpc**3 / (u.Msun * u.Myr**2)).value
 
 ### sim config params
-simName = "testRun_forwards_m22=1_run2"
-refSim = "testRun_backwards_m22=1_run2"
+simName = "testRun_forwards_m22=1_run3"
+refSim = "testRun_backwards_m22=1_run3"
 N = 256
 D = 3
 data_drops = 20

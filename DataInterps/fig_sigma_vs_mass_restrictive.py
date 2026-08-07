@@ -5,13 +5,20 @@ import plotUtils as pu
 import mathUtils as mu
 import numpy as np 
 
+# simNames = [
+#  "testRun_yesFDM",
+#  "testRun_yesFDMHeavy",
+#  # "testRun_yesFDM_m22=1",
+#  "testRun_yesFDM_m22=2",
+#  "testRun_forwards_m22=1",
+#  "testRun_forwards_m22=1_run2",
+#  "testRun_forwards_m22=1_run3",
+# ]
 simNames = [
- "testRun_yesFDM",
- "testRun_yesFDMHeavy",
- # "testRun_yesFDM_m22=1",
- "testRun_yesFDM_m22=2",
- "testRun_forwards_m22=1",
- "testRun_forwards_m22=1_run2",
+ "dataRun_m22=0_5_run1",
+ "dataRun_m22=0_5_run2",
+  "dataRun_m22=0_3_run1",
+ "dataRun_m22=0_3_run2",
 ]
 colors = ['r','b','g','c','m','y','k']
 mass_range = [1.3e-1, 3]
