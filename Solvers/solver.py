@@ -15,8 +15,7 @@ try:
 except ImportError:
 	CUPY_IMPORTED = False
 import cupy as cp
-import jax.dlpack
-import jax.numpy as jnp
+import milkyWayPotential as mwp
 
 class Solver():
 
@@ -895,12 +894,7 @@ class Solver():
 		np = np_
 		if CUPY_IMPORTED and self.gpu:
 			np = cp
-		jax_array = jax.dlpack.from_dlpack(r)
-		return cp.from_dlpack( self.GetPotential_jax(jax_array, float(T)) )
-
-	@jax.jit(static_argnums=0)
-	def GetPotential_jax(self,r,T):
-	    return jax.vmap(lambda pos: self.pot_MW.potential(pos, T))(r)
+		return mwp.gala_mw.potential(np.asarray(r), T)
 
 	def CalcForceOnProg(self, T):
 		np = np_
@@ -916,16 +910,6 @@ class Solver():
 		np = np_
 		if CUPY_IMPORTED and self.gpu:
 			np = cp
-		force = np.zeros(np.shape(r))
-
-		for i in range(3):
-			displacement = np.zeros(3)
-			displacement[i] = self.dx
-			# calculates the negative gradient
-			force[:,i] += (-1./12./self.dx)*self.GetPotential(r - 2*displacement, T)
-			force[:,i] += (8./12./self.dx)*self.GetPotential(r - displacement, T)
-			force[:,i] += (-8./12./self.dx)*self.GetPotential(r + displacement, T)
-			force[:,i] += (1./12./self.dx)*self.GetPotential(r + 2*displacement, T)
-
-		return force
+		# Analytic a = -∇Φ for GalaMilkyWayPotential; static, so T is unused.
+		return mwp.gala_mw.acceleration(np.asarray(r), T)
 		
