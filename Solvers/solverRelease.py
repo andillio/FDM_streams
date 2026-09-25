@@ -454,7 +454,7 @@ class Solver():
 		self.v[self.strip_index] = v1 - v_prog_current
 		self.active[self.strip_index] = True
 
-		N_stars_per_arm = len(self.r_stars) // 2
+		N_stars_per_arm = self.np // 2
 		
 		# then add that star to the simulated list
 		self.r[self.strip_index + N_stars_per_arm] = r2 - r_prog_current
