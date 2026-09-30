@@ -75,7 +75,7 @@ def Boltzmann_distr(s):
 
 def SetICs():
 	s = solver.Solver()
-    s.dataDir = dataDir
+	s.dataDir = dataDir
 
 	# sim params
 	s.simName = simName

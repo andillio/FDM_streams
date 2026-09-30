@@ -58,6 +58,7 @@ n_streams = 64
 
 def SetICs():
 	s = solver.Solver()
+	s.dataDir = dataDir
 
 	# sim params
 	s.simName = simName
