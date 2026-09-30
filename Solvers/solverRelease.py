@@ -16,6 +16,60 @@ except ImportError:
 import cupy as cp
 import jax.dlpack
 import milkyWayPotential as mwp
+import jax.numpy as jnp
+
+class Perturbation:
+
+	def __init__(self, phi, L, dx, gpu):
+		if CUPY_IMPORTED and gpu:
+			self.phi = jax.dlpack.from_dlpack(cp.ascontiguousarray(phi))
+		else:
+			self.phi = jnp.asarray(phi)
+
+		self.gpu = gpu
+		self.L = float(L)
+		self.dx = float(dx)
+
+	def potential(self, xyz, t):
+		xyz = jnp.asarray(xyz)
+
+		# Convert physical position to fractional grid coordinates
+		q = (xyz + self.L / 2.0) / self.dx
+
+		i0 = jnp.floor(q).astype(jnp.int32)
+		f = q - i0
+
+		# Keep interpolation cell inside grid
+		shape = jnp.array(self.phi.shape)
+		i0 = jnp.clip(i0, 0, shape - 2)
+		i1 = i0 + 1
+
+		x0, y0, z0 = i0
+		x1, y1, z1 = i1
+		fx, fy, fz = f
+
+		# Eight corners
+		c000 = self.phi[x0, y0, z0]
+		c100 = self.phi[x1, y0, z0]
+		c010 = self.phi[x0, y1, z0]
+		c110 = self.phi[x1, y1, z0]
+		c001 = self.phi[x0, y0, z1]
+		c101 = self.phi[x1, y0, z1]
+		c011 = self.phi[x0, y1, z1]
+		c111 = self.phi[x1, y1, z1]
+
+		# Interpolate x
+		c00 = c000 * (1 - fx) + c100 * fx
+		c10 = c010 * (1 - fx) + c110 * fx
+		c01 = c001 * (1 - fx) + c101 * fx
+		c11 = c011 * (1 - fx) + c111 * fx
+
+		# Interpolate y
+		c0 = c00 * (1 - fy) + c10 * fy
+		c1 = c01 * (1 - fy) + c11 * fy
+
+		# Interpolate z
+		return c0 * (1 - fz) + c1 * fz
 
 class Solver():
 
@@ -35,6 +89,7 @@ class Solver():
 		self.psiSelfGrav = False
 		self.integrateBackwards = False
 		self.shouldStripStars = True
+		self.dataDir = "Data/"
 
 		### physics parameter
 		self.L = 1. # float, box length
@@ -122,12 +177,12 @@ class Solver():
 		"""
 		outputs the initial conditions
 		"""
-		if not(os.path.isdir(f"Data/{self.simName}/r")) and self.np != None and self.np > 0:
-			os.mkdir(f"Data/{self.simName}/r")
-		if not(os.path.isdir(f"Data/{self.simName}/v")) and self.np != None and self.np > 0:
-			os.mkdir(f"Data/{self.simName}/v")
-		if not(os.path.isdir(f"Data/{self.simName}/psi")):
-			os.mkdir(f"Data/{self.simName}/psi")
+		if not(os.path.isdir(self.dataDir + f"{self.simName}/r")) and self.np != None and self.np > 0:
+			os.mkdir(self.dataDir + f"{self.simName}/r")
+		if not(os.path.isdir(self.dataDir + f"{self.simName}/v")) and self.np != None and self.np > 0:
+			os.mkdir(self.dataDir + f"{self.simName}/v")
+		if not(os.path.isdir(self.dataDir + f"{self.simName}/psi")):
+			os.mkdir(self.dataDir + f"{self.simName}/psi")
 		self.DataDrop(0)
 
 
@@ -139,14 +194,14 @@ class Solver():
 		if CUPY_IMPORTED and self.gpu:
 			np = cp
 		if self.np != None and self.np > 0:
-			np.save("Data/" + self.simName + f"/r/drop{i + self.initial_drop}.npy", self.r)
-			np.save("Data/" + self.simName + f"/v/drop{i + self.initial_drop}.npy", self.v)
-		np.save("Data/" + self.simName + f"/psi/drop{i+ self.initial_drop}.npy", self.psi)
+			np.save(self.dataDir + self.simName + f"/r/drop{i + self.initial_drop}.npy", self.r)
+			np.save(self.dataDir + self.simName + f"/v/drop{i + self.initial_drop}.npy", self.v)
+		np.save(self.dataDir + self.simName + f"/psi/drop{i+ self.initial_drop}.npy", self.psi)
 
 		self.r_prog_save[i + self.initial_drop] = self.r_prog[0]
 		self.v_prog_save[i + self.initial_drop] = self.v_prog[0]
-		np.save("Data/" + self.simName + f"/r_prog.npy", self.r_prog_save)
-		np.save("Data/" + self.simName + f"/v_prog.npy", self.v_prog_save)
+		np.save(self.dataDir + self.simName + f"/r_prog.npy", self.r_prog_save)
+		np.save(self.dataDir + self.simName + f"/v_prog.npy", self.v_prog_save)
 
 
 	def OutputToml(self):
@@ -182,7 +237,7 @@ class Solver():
 		psiSelfGrav 				= {str(self.psiSelfGrav).lower()} # bool, field feels own gravity
 		'''
 
-		f = open(f"Data/{self.simName}/meta.toml", "w")
+		f = open(self.dataDir + f"{self.simName}/meta.toml", "w")
 		f.write(text)
 		f.close()
 
@@ -202,8 +257,8 @@ class Solver():
 			raise Exception("simName has not been set.\n"+\
 				"set simName before initializing files.")
 
-		if not(os.path.isdir(f"Data/{self.simName}")):
-			os.mkdir(f"Data/{self.simName}")
+		if not(os.path.isdir(self.dataDir + f"{self.simName}")):
+			os.mkdir(self.dataDir + f"{self.simName}")
 
 		self.r_prog_save = np.zeros((self.data_drops+1,3))
 		self.v_prog_save = np.zeros((self.data_drops+1,3))	
@@ -461,18 +516,18 @@ class Solver():
 		self.v[self.strip_index + N_stars_per_arm] = v2 - v_prog_current
 		self.active[self.strip_index + N_stars_per_arm] = True
 
-		print("\ninput")
-		print(r_prog_current)
-		print(v_prog_current)
-		print(T) 
-		print(self.progenitor_mass)
-		print("\nnew star")
-		print(new_star_info)
-		print(self.r[self.strip_index + N_stars_per_arm])
-		print(self.v[self.strip_index + N_stars_per_arm])
-		print(self.r[self.strip_index])
-		print(self.v[self.strip_index])
-		print("new star\n")
+		# print("\ninput")
+		# print(r_prog_current)
+		# print(v_prog_current)
+		# print(T) 
+		# print(self.progenitor_mass)
+		# print("\nnew star")
+		# print(new_star_info)
+		# print(self.r[self.strip_index + N_stars_per_arm])
+		# print(self.v[self.strip_index + N_stars_per_arm])
+		# print(self.r[self.strip_index])
+		# print(self.v[self.strip_index])
+		# print("new star\n")
 
 		self.strip_index += 1
 
@@ -495,9 +550,13 @@ class Solver():
 
 		t = t - float(self.Tf)
 
+		phi = self.compute_phi()
+		perturbation = Perturbation(phi, self.L, self.dx, self.gpu)
+
 		return self.pot_MW.release_model(
 			x=r_prog_current, v=v_prog_current,
-			Msat=progenitor_mass, i=seed, t=t, seed_num=seed)
+			Msat=progenitor_mass, i=seed, t=t, seed_num=seed
+			, potential_modifier = perturbation)
 
 
 	def GetCurrentProgVelAndPos(self):
@@ -567,7 +626,7 @@ class Solver():
 		"""
 		str_ = self.BaseDiagnostics(T,time0)
 		# str_ += " %.2f alias fraction"%(self.rho_alias)
-		str_ += self.get_dt(self.Tf, debug = True)
+		# str_ += self.get_dt(self.Tf, debug = True)
 		su.repeat_print(str_)
 
 	def Update(self, dt):

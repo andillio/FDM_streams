@@ -34,6 +34,7 @@ class Solver():
 		self.psiSelfGrav = False
 		self.integrateBackwards = False
 		self.shouldStripStars = True
+		self.dataDir = "Data/"
 
 		### physics parameter
 		self.L = 1. # float, box length
@@ -119,12 +120,12 @@ class Solver():
 		"""
 		outputs the initial conditions
 		"""
-		if not(os.path.isdir(f"Data/{self.simName}/r")) and self.np != None and self.np > 0:
-			os.mkdir(f"Data/{self.simName}/r")
-		if not(os.path.isdir(f"Data/{self.simName}/v")) and self.np != None and self.np > 0:
-			os.mkdir(f"Data/{self.simName}/v")
-		if not(os.path.isdir(f"Data/{self.simName}/psi")):
-			os.mkdir(f"Data/{self.simName}/psi")
+		if not(os.path.isdir(self.dataDir +f"{self.simName}/r")) and self.np != None and self.np > 0:
+			os.mkdir(self.dataDir + f"{self.simName}/r")
+		if not(os.path.isdir(self.dataDir + f"{self.simName}/v")) and self.np != None and self.np > 0:
+			os.mkdir(self.dataDir + f"{self.simName}/v")
+		if not(os.path.isdir(self.dataDir + f"{self.simName}/psi")):
+			os.mkdir(self.dataDir + f"{self.simName}/psi")
 		self.DataDrop(0)
 
 
@@ -136,14 +137,14 @@ class Solver():
 		if CUPY_IMPORTED and self.gpu:
 			np = cp
 		if self.np != None and self.np > 0:
-			np.save("Data/" + self.simName + f"/r/drop{i + self.initial_drop}.npy", self.r)
-			np.save("Data/" + self.simName + f"/v/drop{i + self.initial_drop}.npy", self.v)
-		np.save("Data/" + self.simName + f"/psi/drop{i+ self.initial_drop}.npy", self.psi)
+			np.save(self.dataDir  + self.simName + f"/r/drop{i + self.initial_drop}.npy", self.r)
+			np.save(self.dataDir  + self.simName + f"/v/drop{i + self.initial_drop}.npy", self.v)
+		np.save(self.dataDir  + self.simName + f"/psi/drop{i+ self.initial_drop}.npy", self.psi)
 
 		self.r_prog_save[i + self.initial_drop] = self.r_prog[0]
 		self.v_prog_save[i + self.initial_drop] = self.v_prog[0]
-		np.save("Data/" + self.simName + f"/r_prog.npy", self.r_prog_save)
-		np.save("Data/" + self.simName + f"/v_prog.npy", self.v_prog_save)
+		np.save(self.dataDir  + self.simName + f"/r_prog.npy", self.r_prog_save)
+		np.save(self.dataDir  + self.simName + f"/v_prog.npy", self.v_prog_save)
 
 
 	def OutputToml(self):
@@ -179,14 +180,14 @@ class Solver():
 		psiSelfGrav 				= {str(self.psiSelfGrav).lower()} # bool, field feels own gravity
 		'''
 
-		f = open(f"Data/{self.simName}/meta.toml", "w")
+		f = open(self.dataDir + f"{self.simName}/meta.toml", "w")
 		f.write(text)
 		f.close()
 
 		if len(self.extras) > 0:
 			extras = {}
 			extras['extras'] = self.extras
-			su.AddLines2Toml(extras, f"Data/{self.simName}/meta.toml")
+			su.AddLines2Toml(extras, self.dataDir + f"{self.simName}/meta.toml")
 
 	def InitializeFiles(self):
 		"""
@@ -199,8 +200,8 @@ class Solver():
 			raise Exception("simName has not been set.\n"+\
 				"set simName before initializing files.")
 
-		if not(os.path.isdir(f"Data/{self.simName}")):
-			os.mkdir(f"Data/{self.simName}")
+		if not(os.path.isdir(self.dataDir + f"{self.simName}")):
+			os.mkdir(self.dataDir + f"{self.simName}")
 
 		self.r_prog_save = np.zeros((self.data_drops+1,3))
 		self.v_prog_save = np.zeros((self.data_drops+1,3))	

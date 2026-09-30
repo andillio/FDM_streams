@@ -20,7 +20,7 @@ import sysUtils as su
 import sys
 sys.path.insert(1, 'Solvers')
 # import solver as solver
-import solverExplicitProg as solver
+import solverRelease as solver
 import scipy.stats as sp2
 import streamsculptor
 from streamsculptor import potential
@@ -31,7 +31,7 @@ usys = UnitSystem(u.kpc, u.Myr, u.Msun, u.radian)
 usys.G = G.to(u.kpc**3 / (u.Msun * u.Myr**2)).value
 
 ### sim config params
-simName = "oldRun_backwards_m22=1"
+simName = "newRun_backwards_m22=1"
 dataDir = "/nesi/nobackup/uoa00461/aebe644/FDM_streams/"
 N = 256
 D = 3
@@ -52,6 +52,10 @@ seed_ = 3
 
 sigma_dm = 216. * au.kms2kpcMyr
 n_streams = 64
+# print(sigma_dm / au.kms2kpcMyr + 5. / 10000.*Tf)
+# print(sigma_dm *Tf)
+
+
 
 def PlotStuff(rho):
 	rho = su.cpuThis(rho)
