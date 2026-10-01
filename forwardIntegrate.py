@@ -81,13 +81,13 @@ def SetICs():
 	s.hbar_ = au.h_tilde(m22)
 	s.pot_MW = potential.GalaMilkyWayPotential(units=usys)
 
-	s.r_prog = np.load(d.dataDir + "r_prog1.npy")
-	s.v_prog = np.load(d.dataDir + "v_prog1.npy")
-	s.t_prog = np.load(d.dataDir + "t_prog1.npy")
+	s.r_prog = np.load(s.dataDir + "r_prog1.npy")
+	s.v_prog = np.load(s.dataDir + "v_prog1.npy")
+	s.t_prog = np.load(s.dataDir + "t_prog1.npy")
 
-	s.r_stars = np.load(d.dataDir + "r_stars1.npy") # first half of this array is leading arm, second is trailing arm
-	s.v_stars = np.load(d.dataDir + "v_stars1.npy")
-	s.t_stars = np.load(d.dataDir + "t_strip1.npy")
+	s.r_stars = np.load(s.dataDir + "r_stars1.npy") # first half of this array is leading arm, second is trailing arm
+	s.v_stars = np.load(s.dataDir + "v_stars1.npy")
+	s.t_stars = np.load(s.dataDir + "t_strip1.npy")
 
 	# initialize dynamic variables
 	s.set_K()
@@ -95,9 +95,9 @@ def SetICs():
 	N_stars = len(s.r_stars)
 	s.np = N_stars
 	
-	s.psi = np.load(d.dataDir + f"{refSim}/psi/drop100.npy")
-	s.r_perturb = np.load(d.dataDir + f"{refSim}/r/drop100.npy")
-	s.v_perturb = np.load(d.dataDir + f"{refSim}/v/drop100.npy")
+	s.psi = np.load(s.dataDir + f"{refSim}/psi/drop100.npy")
+	s.r_perturb = np.load(s.dataDir + f"{refSim}/r/drop100.npy")
+	s.v_perturb = np.load(s.dataDir + f"{refSim}/v/drop100.npy")
 	
 	s.r = np.zeros( (N_stars, 3) )
 	s.v = np.zeros( (N_stars, 3) )

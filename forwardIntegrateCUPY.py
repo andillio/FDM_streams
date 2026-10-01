@@ -92,8 +92,8 @@ def SetICs():
 	s.t_stars = np.linspace(0,3500,5000)
 	s.r_prog = np.zeros((1,3))
 	s.v_prog = np.zeros((1,3))
-	s.r_prog[0] = np.load(d.dataDir + f"{refSim}/r_prog.npy")[-1]
-	s.v_prog[0] = np.load(d.dataDir + f"{refSim}/v_prog.npy")[-1]
+	s.r_prog[0] = np.load(s.dataDir + f"{refSim}/r_prog.npy")[-1]
+	s.v_prog[0] = np.load(s.dataDir + f"{refSim}/v_prog.npy")[-1]
 	
 	s.r = np.zeros( (N_stars, 3) )
 	s.v = np.zeros( (N_stars, 3) )

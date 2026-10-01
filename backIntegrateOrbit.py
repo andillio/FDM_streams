@@ -102,8 +102,8 @@ def SetICs():
 
 	s.r_prog = np.zeros((1,3))
 	s.v_prog = np.zeros((1,3))
-	s.r_prog[0] = np.load(d.dataDir + "r_prog1.npy")[-1]
-	s.v_prog[0] = np.load(d.dataDir + "v_prog1.npy")[-1]
+	s.r_prog[0] = np.load(s.dataDir + "r_prog1.npy")[-1]
+	s.v_prog[0] = np.load(s.dataDir + "v_prog1.npy")[-1]
 
 	# initialize dynamic variables
 	s.set_K()
