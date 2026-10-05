@@ -20,7 +20,7 @@ import sysUtils as su
 import sys
 sys.path.insert(1, 'Solvers')
 # import solver as solver
-import solverExplicitProg as solver
+import solverRelease as solver
 import scipy.stats as sp2
 import streamsculptor
 from streamsculptor import potential
