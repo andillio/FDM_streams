@@ -29,6 +29,7 @@ class Perturbation:
 		self.gpu = gpu
 		self.L = float(L)
 		self.dx = float(dx)
+		self.seed = 0
 
 	def potential(self, xyz, t):
 		xyz = jnp.asarray(xyz)
@@ -497,7 +498,7 @@ class Solver():
 
 		new_star_info = self.stream_progenitor_release_model(
 			r_prog_current, v_prog_current, T, self.progenitor_mass
-			)
+			seed =self.seed)
 
 		r1 = cp.from_dlpack(new_star_info[0])
 		r2 = cp.from_dlpack(new_star_info[1])
