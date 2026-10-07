@@ -29,7 +29,6 @@ class Perturbation:
 		self.gpu = gpu
 		self.L = float(L)
 		self.dx = float(dx)
-		self.seed = 0
 
 	def potential(self, xyz, t):
 		xyz = jnp.asarray(xyz)
@@ -91,6 +90,7 @@ class Solver():
 		self.integrateBackwards = False
 		self.shouldStripStars = True
 		self.dataDir = "Data/"
+		self.seed = 0
 
 		### physics parameter
 		self.L = 1. # float, box length
