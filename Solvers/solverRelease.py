@@ -497,7 +497,7 @@ class Solver():
 		T = float(self.T)
 
 		new_star_info = self.stream_progenitor_release_model(
-			r_prog_current, v_prog_current, T, self.progenitor_mass
+			r_prog_current, v_prog_current, T, self.progenitor_mass,
 			seed =self.seed)
 
 		r1 = cp.from_dlpack(new_star_info[0])
