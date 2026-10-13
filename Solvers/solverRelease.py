@@ -18,17 +18,40 @@ import jax.dlpack
 import milkyWayPotential as mwp
 import jax.numpy as jnp
 
+import jax
+import jax.numpy as jnp
+
+@jax.tree_util.register_pytree_node_class
 class Perturbation:
-
 	def __init__(self, phi, L, dx, gpu):
-		if CUPY_IMPORTED and gpu:
-			self.phi = jax.dlpack.from_dlpack(cp.ascontiguousarray(phi))
-		else:
-			self.phi = jnp.asarray(phi)
+	    if CUPY_IMPORTED and gpu:
+	        self.phi = jax.dlpack.from_dlpack(cp.ascontiguousarray(phi))
+	    else:
+	        self.phi = jnp.asarray(phi)
 
-		self.gpu = gpu
-		self.L = float(L)
-		self.dx = float(dx)
+	    self.L = float(L)
+	    self.dx = float(dx)
+	    self.gpu = gpu
+	    self.seed = 0
+
+	def tree_flatten(self):
+		# Dynamic arrays
+		children = (self.phi,)
+
+		# Static metadata
+		aux_data = (self.L, self.dx, self.gpu)
+
+		return children, aux_data
+
+	@classmethod
+	def tree_unflatten(cls, aux_data, children):
+	    obj = cls.__new__(cls)
+
+	    obj.phi = children[0]
+	    obj.L, obj.dx, obj.gpu = aux_data
+	    obj.seed = 0
+
+	    return obj
 
 	def potential(self, xyz, t):
 		xyz = jnp.asarray(xyz)
@@ -70,6 +93,7 @@ class Perturbation:
 
 		# Interpolate z
 		return c0 * (1 - fz) + c1 * fz
+
 
 class Solver():
 
