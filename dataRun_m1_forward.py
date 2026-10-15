@@ -32,8 +32,10 @@ usys = UnitSystem(u.kpc, u.Myr, u.Msun, u.radian)
 usys.G = G.to(u.kpc**3 / (u.Msun * u.Myr**2)).value
 
 ### sim config params
-simName = "dataRun_m22=1_forward_run1"
-refSim = "dataRun_m22=1_back_run1"
+seed_ = 2
+np.random.seed(seed_)
+simName = f"dataRun_m22=1_forward_run{seed_}"
+refSim = f"dataRun_m22=1_back_run{seed_}"
 N = 256
 D = 3
 data_drops = 20
@@ -67,6 +69,7 @@ def SetICs():
 	s.gpu = gpu 
 	s.integrateBackwards = False
 	s.shouldStripStars = True
+	s.seed = seed_
 
 	# physics params
 	s.L = L

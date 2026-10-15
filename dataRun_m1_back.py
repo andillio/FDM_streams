@@ -30,8 +30,10 @@ from astropy.constants import G
 usys = UnitSystem(u.kpc, u.Myr, u.Msun, u.radian)
 usys.G = G.to(u.kpc**3 / (u.Msun * u.Myr**2)).value
 
+seed_ = 2
+np.random.seed(seed_)
 ### sim config params
-simName = "dataRun_m22=1_back_run1"
+simName = f"dataRun_m22=1_back_run{seed}"
 N = 256
 D = 3
 data_drops = 100
@@ -47,7 +49,6 @@ Tf = 3500.
 initial_drop = 0
 T_initial = 0
 
-seed_ = 1
 sigma_dm = 216. * au.kms2kpcMyr
 n_streams = 64
 # print(sigma_dm / au.kms2kpcMyr + 5. / 10000.*Tf)
@@ -89,6 +90,7 @@ def SetICs():
 	s.gpu = gpu 
 	s.integrateBackwards = True
 	s.shouldStripStars = False
+	s.seed = seed_
 
 	# physics params
 	s.L = L
