@@ -1024,7 +1024,7 @@ class Solver():
 				self.psi *= np.exp(-1j*dt*\
 	            	np.einsum("i,j->ij",1./self.hbar_, phi))
 		if not(self.np is None) and self.np > 0:
-			acc = self.ComputeAcc(phi, self.r[self.active]) # force from field
+			acc = self.ComputeAcc(phi, self.r[self.active] + self.r_prog[0]) # force from field
 			acc_prog = self.GetForceAtPosition(self.r_prog
 				, float(self.T) ) # force from external
 			
