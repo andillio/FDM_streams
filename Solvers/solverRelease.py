@@ -55,6 +55,7 @@ class Perturbation:
 
 	def potential(self, xyz, t):
 		xyz = jnp.asarray(xyz)
+		xyz = (xyz + self.L / 2.0) % self.L - self.L / 2.0
 
 		# Convert physical position to fractional grid coordinates
 		q = (xyz + self.L / 2.0) / self.dx
@@ -64,8 +65,8 @@ class Perturbation:
 
 		# Keep interpolation cell inside grid
 		shape = jnp.array(self.phi.shape)
-		i0 = jnp.clip(i0, 0, shape - 2)
-		i1 = i0 + 1
+		i0 = i0 % shape
+		i1 = (i0 + 1) % shape
 
 		x0, y0, z0 = i0
 		x1, y1, z1 = i1
