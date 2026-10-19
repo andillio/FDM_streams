@@ -581,7 +581,7 @@ class Solver():
 
 		return self.pot_MW.release_model(
 			x=r_prog_current, v=v_prog_current,
-			Msat=progenitor_mass, i=seed, t=t, seed_num=seed
+			Msat=progenitor_mass, i=self.strip_index + 1, t=t, seed_num=seed
 			, potential_modifier = perturbation)
 
 
@@ -1028,12 +1028,12 @@ class Solver():
 			acc = self.ComputeAcc(phi, self.r[self.active] + self.r_prog[0]) # force from field
 			acc_prog = self.GetForceAtPosition(self.r_prog
 				, float(self.T) ) # force from external
+			acc_prog += self.ComputeAcc(phi, self.r_prog) # force from field
 			
 			acc[:] -= acc_prog[0]
 			acc += self.GetForceAtPosition(self.r[self.active] + self.r_prog[0]
 				, float(self.T) ) # relative external force compared to prog ref frame
 			
-			acc_prog += self.ComputeAcc(phi, self.r_prog) # force from field
 			self.v[self.active] += acc*dt.real
 			self.v_prog += acc_prog*dt.real
 
