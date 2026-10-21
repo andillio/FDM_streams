@@ -30,10 +30,10 @@ from astropy.constants import G
 usys = UnitSystem(u.kpc, u.Myr, u.Msun, u.radian)
 usys.G = G.to(u.kpc**3 / (u.Msun * u.Myr**2)).value
 
-seed_ = 2
+seed_ = 1
 np.random.seed(seed_)
 ### sim config params
-simName = f"dataRun_m22=1_back_run{seed_}"
+simName = f"dataRun_m22=0_5_back_run{seed_}"
 N = 256
 D = 3
 data_drops = 100
@@ -41,7 +41,7 @@ cf = .1
 L = 25/ np.sqrt(3)
 dx = L / N
 nf = 1
-m22 = np.array([1.0])
+m22 = np.array([.5001])
 rhoDM = 1e7
 Mtot = rhoDM * L**3
 C = au.G*4*np.pi

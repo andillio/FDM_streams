@@ -113,6 +113,7 @@ class Solver():
 		self.freezeDensity = False
 		self.psiSelfGrav = False
 		self.integrateBackwards = False
+		self.calc_perturbation = True
 		self.shouldStripStars = True
 		self.dataDir = "Data/"
 		self.seed = 0
@@ -127,6 +128,7 @@ class Solver():
 		self.m22 = 1 # float, particle mass [1e-22 eV/c^2]
 		self.hbar_ = 1. # float, hbar / m [kpc^2 / Myr] 
 		self.padded = False
+		self.f_fdm = 1.0
 
 		### dynamic variables
 		self.psi = None
@@ -483,6 +485,9 @@ class Solver():
 		self.T = 0.
 		Vmax = None
 
+		# set initial temp and amplitude
+		self.AlterTemp() # alter velocity amplitudes based on position
+		self.AlterAmp()
 		# self.MakePeriodic()
 
 		while(self.T < self.Tf):
@@ -577,7 +582,9 @@ class Solver():
 		t = t - float(self.Tf)
 
 		phi = self.compute_phi()
-		perturbation = Perturbation(phi, self.L, self.dx, self.gpu)
+		perturbation = None
+		if self.calc_perturbation:
+			perturbation = Perturbation(phi, self.L, self.dx, self.gpu)
 
 		return self.pot_MW.release_model(
 			x=r_prog_current, v=v_prog_current,
@@ -688,7 +695,7 @@ class Solver():
 		Mtot = au.NFW(R, rs, rho_s) * self.L**3
 		for i in range(self.nf):		
 			self.psi[i] /= np.sqrt(np.sum(np.abs(self.psi[i])**2)*self.dx**3)
-			self.psi[i,:,:,:] *= np.sqrt(Mtot)
+			self.psi[i,:,:,:] *= np.sqrt(Mtot*self.f_fdm) 
 
 
 	def AlterTemp(self):
