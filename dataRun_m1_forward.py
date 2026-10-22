@@ -32,18 +32,18 @@ usys = UnitSystem(u.kpc, u.Myr, u.Msun, u.radian)
 usys.G = G.to(u.kpc**3 / (u.Msun * u.Myr**2)).value
 
 ### sim config params
-seed_ = 1
+seed_ = 3
 np.random.seed(seed_)
-simName = f"dataRun_m22=0_5_forward_run{seed_}"
-refSim = f"dataRun_m22=0_5_back_run{seed_}"
-N = 256
+simName = f"dataRun_m22=1_forward_run{seed_}"
+refSim = f"dataRun_m22=1_back_run{seed_}"
+N = 320
 D = 3
 data_drops = 20
 cf = .1
-L = 25/ np.sqrt(3) 
+L = 25/ np.sqrt(3) / 2.
 dx = L / N
 nf = 1
-m22 = np.array([.5001])
+m22 = np.array([1.0001])
 rhoDM = 1e7
 Mtot = rhoDM * L**3
 C = au.G*4*np.pi
@@ -87,7 +87,7 @@ def SetICs():
 	N_stars = int(1e4)
 	s.np = N_stars
 	
-	s.psi = np.load(f"Data/{refSim}/psi/drop100.npy")
+	s.psi = np.load(f"Data/{refSim}/psi/drop20.npy")
 	s.t_stars = np.linspace(0,3500,5000)
 	s.r_prog = np.zeros((1,3))
 	s.v_prog = np.zeros((1,3))
