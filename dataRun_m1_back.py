@@ -34,7 +34,7 @@ seed_ = 3
 np.random.seed(seed_)
 ### sim config params
 simName = f"dataRun_m22=1_back_run{seed_}"
-N = 320
+N = 256
 D = 3
 data_drops = 20
 cf = .1
